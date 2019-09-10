@@ -34,6 +34,7 @@ function buildAppError(cause: any, { url, operation}: HttpRequest) {
     message = data.message || cause.message || errorCode.message;
     code = data.code || cause.code || errorCode.code;
     info =  data.info || { status };
+    cause = data.cause || cause;
 
   } else {
     // connection error, timeout, etc.
@@ -41,7 +42,6 @@ function buildAppError(cause: any, { url, operation}: HttpRequest) {
     code = cause.code || ErrorCodes.requestError.code;
     info = { method: operation.method, url };
   }
-
   return new AppError(message, code, info, cause);
 }
 
