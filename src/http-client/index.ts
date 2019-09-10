@@ -15,7 +15,7 @@ const errorCodeByStatus: StatusErrorCodes = {
   '403': ErrorCodes.forbidden,
   '404': ErrorCodes.notFound,
   '405': ErrorCodes.methodNotAllowed,
-  '500': ErrorCodes.internal
+  '500': ErrorCodes.internalServerError
 };
 
 /** Construye un AppError a partir de un Error capturado al hacer el request */
@@ -42,7 +42,7 @@ function buildAppError(cause: any, { url, operation}: HttpRequest) {
     code = cause.code || ErrorCodes.requestError.code;
     info = { method: operation.method, url };
   }
-  return new AppError(message, code, info, cause);
+    return new AppError(message, code, info, cause);
 }
 
 /** Obtiene los headers a propagar y el TxID. Si no existe, lo crea. */

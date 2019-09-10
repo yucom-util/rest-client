@@ -62,7 +62,7 @@ describe('HTTP Client', () => {
         await client.request(new HttpRequest(post, '/err/500'));
         fail();
       } catch (err) {
-        expect(ErrorCodes.internal.is(err)).toBeTruthy();
+        expect(ErrorCodes.internalServerError.is(err)).toBeTruthy();
         expect(err.info.status).toBe(500);
         done();
       }
@@ -74,7 +74,7 @@ describe('HTTP Client', () => {
         await client.request(new HttpRequest(post, '/err/499'));
         fail();
       } catch (err) {
-        expect(ErrorCodes.internal.is(err)).toBeTruthy();
+        expect(ErrorCodes.internalServerError.is(err)).toBeTruthy();
         expect(err.info.status).toBe(499);
         done();
       }
@@ -84,6 +84,21 @@ describe('HTTP Client', () => {
       const client = create('http://localhost:8989', 20000);
       try {
         await client.request(new HttpRequest(post, '/err/404?message=Hello&code=foo&info=bar&stack=this_is_a_stack'));
+        fail();
+      } catch (err) {
+        expect(ErrorCodes.notFound.is(err));
+        expect(err.code).toBe('notFound');
+        expect(err.message).toBe('Request failed with status code 404');
+        expect(err.info.status).toBe(404);
+        done();
+      }
+    });
+
+    test('Post. 404. Invalid URL.', async done => {
+      await ready;
+      const client = create('http://localhost:8989', 20000);
+      try {
+        await client.request(new HttpRequest(post, '/qwerty'));
         fail();
       } catch (err) {
         expect(ErrorCodes.notFound.is(err));
