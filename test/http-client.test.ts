@@ -2,6 +2,7 @@ import create from '../src/http-client';
 import express from 'express';
 import { ErrorCodes } from '../src/error-codes';
 import { HttpRequest, HttpOperation } from '../src/http-client/model';
+import { code } from '../../common/src/index';
 
 const app = express();
 
@@ -16,13 +17,12 @@ app.post('/err/:n', function (req, res) {
 });
 
 let server;
-const ready = new Promise((resolve, reject) => {
-  server = app.listen(8989, async function() {
-    resolve();
-  });
-});
 
 describe('HTTP Client', () => {
+  beforeAll(done => {
+    server = app.listen(8989, done);
+  });
+
   describe('Create', () => {
     test('Correct URL, with timeout.', () => {
       const client = create('http://localhost:8989', 20000);
@@ -42,8 +42,17 @@ describe('HTTP Client', () => {
     });
   });
   describe('request', () => {
+    test('Post invalid host. Valid URL', async done => {
+      const client = create('http://localhost:899', 20000);
+      try {
+        await client.request(new HttpRequest(post, '/personas'));
+        fail('Error was expected!');
+      } catch (err) {
+        expect(err.code).toBe(ErrorCodes.invalidEndpoint.code);
+        done();
+      }
+    });
     test('Post OK', async done => {
-      await ready;
       try {
         const client = create('http://localhost:8989', 20000);
         const array = await client.request(new HttpRequest(post, '/personas'));
@@ -56,7 +65,6 @@ describe('HTTP Client', () => {
       }
     });
     test('Post. 500', async done => {
-      await ready;
       const client = create('http://localhost:8989', 20000);
       try {
         await client.request(new HttpRequest(post, '/err/500'));
@@ -68,7 +76,6 @@ describe('HTTP Client', () => {
       }
     });
     test('Post. 499 (unknown error code)', async done => {
-      await ready;
       const client = create('http://localhost:8989', 20000);
       try {
         await client.request(new HttpRequest(post, '/err/499'));
@@ -80,7 +87,6 @@ describe('HTTP Client', () => {
       }
     });
     test('Post. 404 with body', async done => {
-      await ready;
       const client = create('http://localhost:8989', 20000);
       try {
         await client.request(new HttpRequest(post, '/err/404?message=Hello&code=foo&info=bar&stack=this_is_a_stack'));
@@ -95,7 +101,6 @@ describe('HTTP Client', () => {
     });
 
     test('Post. 404. Invalid URL.', async done => {
-      await ready;
       const client = create('http://localhost:8989', 20000);
       try {
         await client.request(new HttpRequest(post, '/qwerty'));

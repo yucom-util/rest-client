@@ -20,6 +20,7 @@ const errorCodeByStatus: StatusErrorCodes = {
 
 /** Construye un AppError a partir de un Error capturado al hacer el request */
 function buildAppError(cause: any, { url, operation}: HttpRequest) {
+
   let message;
   let code;
   let info;
@@ -39,10 +40,10 @@ function buildAppError(cause: any, { url, operation}: HttpRequest) {
   } else {
     // connection error, timeout, etc.
     message = cause.message || ErrorCodes.requestError.message;
-    code = cause.code || ErrorCodes.requestError.code;
+    code = cause.code === 'ECONNREFUSED' ? ErrorCodes.invalidEndpoint.code : ErrorCodes.requestError.code;
     info = { method: operation.method, url };
   }
-    return new AppError(message, code, info, cause);
+  return new AppError(message, code, info, cause);
 }
 
 /** Obtiene los headers a propagar y el TxID. Si no existe, lo crea. */
